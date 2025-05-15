@@ -1,25 +1,23 @@
-// api/graphql/resolvers.js
-const cache = require('../utils/cache');
 const { fetchCharacters } = require('../services/rickMortyService');
+const cache = require('../utils/cache');
 
 const resolvers = {
-  characters: async ({ name, status }) => {
-    const cacheKey = `characters:${name || ''}:${status || ''}`;
+  characters: async ({ name, status, species, gender, origin }) => {
+    const cacheKey = `characters:${name || ''}:${status || ''}:${species || ''}:${gender || ''}:${origin || ''}`;
     
     try {
-      // Intenta obtener de cache
-      const cached = await cache.get(cacheKey);
-      if (cached) {
-        console.log('Cache hit');
-        return JSON.parse(cached);
+      // Intenta obtener de caché
+      const cachedData = await cache.get(cacheKey);
+      if (cachedData) {
+        return JSON.parse(cachedData);
       }
 
-      // Si no hay cache, llama a la API
-      const data = await fetchCharacters({ name, status });
+      // Si no hay en caché, llama al servicio
+      const data = await fetchCharacters({ name, status, species, gender, origin });
       
-      // Guarda en cache (1 hora)
+      // Guarda en caché (1 hora)
       if (data) {
-        await cache.set(cacheKey, JSON.stringify(data));
+        await cache.set(cacheKey, JSON.stringify(data), 3600);
       }
       
       return data || [];

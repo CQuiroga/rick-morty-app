@@ -1,59 +1,42 @@
 const axios = require('axios');
-const { Character } = require('../models');
-const { cache } = require('../utils/cache');
 
 const API_URL = 'https://rickandmortyapi.com/api/character';
 
-const fetchCharacters = async (params = {}) => {
+const fetchCharacters = async ({ name, status, species, gender, origin }) => {
   try {
-    const response = await axios.get(API_URL, { params });
-    return response.data.results;
-  } catch (error) {
-    console.error('Error fetching characters:', error);
-    return [];
-  }
-};
+    // Parámetros que soporta la API directamente
+    const apiParams = {
+      name,
+      status,
+      species,
+      gender
+    };
 
-const fetchCharacterById = async (id) => {
-  try {
-    const response = await axios.get(`${API_URL}/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching character with id ${id}:`, error);
-    return null;
-  }
-};
+    // Eliminar parámetros undefined
+    Object.keys(apiParams).forEach(key => apiParams[key] === undefined && delete apiParams[key]);
 
-const syncCharacters = async () => {
-  try {
-    const characters = await fetchCharacters();
-    const limitedCharacters = characters.slice(0, 15);
-    
-    for (const char of limitedCharacters) {
-      await Character.upsert({
-        apiId: char.id,
-        name: char.name,
-        status: char.status,
-        species: char.species,
-        type: char.type,
-        gender: char.gender,
-        originName: char.origin.name,
-        originUrl: char.origin.url,
-        locationName: char.location.name,
-        locationUrl: char.location.url,
-        image: char.image,
-        url: char.url
-      });
+    // Primera búsqueda con filtros API
+    const response = await axios.get(API_URL, { params: apiParams });
+    let characters = response.data.results || [];
+
+    // Filtrado adicional por origen si existe
+    if (origin) {
+      const originLower = origin.toLowerCase();
+      characters = characters.filter(character => 
+        character.origin?.name?.toLowerCase().includes(originLower)
+      );
     }
-    
-    console.log('Database synced with Rick and Morty API');
+
+    return characters;
   } catch (error) {
-    console.error('Error syncing characters:', error);
+    if (error.response?.status === 404) {
+      return []; // No hay resultados
+    }
+    console.error('Error fetching characters:', error);
+    throw error;
   }
 };
 
 module.exports = {
-  fetchCharacters,
-  fetchCharacterById,
-  syncCharacters
+  fetchCharacters
 };

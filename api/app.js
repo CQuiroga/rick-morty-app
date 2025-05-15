@@ -1,11 +1,13 @@
-// api/app.js
 const express = require('express');
 const path = require('path');
 const { graphqlHTTP } = require('express-graphql');
 const cors = require('cors');
+const favicon = require('serve-favicon');
 
 // Crear aplicación Express
 const app = express();
+
+app.use(favicon(path.join('frontend/public', 'favicon.ico')));
 
 // Configuración básica
 app.use(cors(
