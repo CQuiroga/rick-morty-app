@@ -12,7 +12,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log('✅ Database connection established');
 
-    // Sincronización de modelos (solo en desarrollo)
+    // Sincronización de modelos
     if (process.env.NODE_ENV !== 'production') {
       await sequelize.sync({ alter: true });
       console.log('🔄 Database models synchronized');

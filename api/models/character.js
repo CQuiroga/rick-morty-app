@@ -1,34 +1,49 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Character extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
     }
   }
+
   Character.init({
-    name: DataTypes.STRING,
-    status: DataTypes.STRING,
-    species: DataTypes.STRING,
-    type: DataTypes.STRING,
-    gender: DataTypes.STRING,
-    originName: DataTypes.STRING,
+    apiId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: true
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: 'unknown'
+    },
+    species: {
+      type: DataTypes.STRING,
+      defaultValue: 'unknown'
+    },
+    gender: {
+      type: DataTypes.STRING,
+      defaultValue: 'unknown'
+    },
+    originName: {
+      type: DataTypes.STRING,
+      defaultValue: 'Desconocido'
+    },
     originUrl: DataTypes.STRING,
     locationName: DataTypes.STRING,
     locationUrl: DataTypes.STRING,
     image: DataTypes.STRING,
     url: DataTypes.STRING,
-    apiId: DataTypes.INTEGER
+    type: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Character',
+    tableName: 'Characters' 
   });
+
   return Character;
 };

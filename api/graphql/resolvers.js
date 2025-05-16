@@ -6,21 +6,20 @@ const resolvers = {
     const cacheKey = `characters:${name || ''}:${status || ''}:${species || ''}:${gender || ''}:${origin || ''}`;
     
     try {
-      // Intenta obtener de caché
-      const cachedData = await cache.get(cacheKey);
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-
-      // Si no hay en caché, llama al servicio
-      const data = await fetchCharacters({ name, status, species, gender, origin });
+      // 1. Siempre consultar y guardar primero
+      const apiCharacters = await fetchCharacters({ name, status, species, gender, origin });
       
-      // Guarda en caché (1 hora)
-      if (data) {
-        await cache.set(cacheKey, JSON.stringify(data), 3600);
-      }
+      // 2. Devolver los datos formateados
+      return apiCharacters.map(c => ({
+        id: c.id,
+        name: c.name,
+        status: c.status,
+        species: c.species,
+        gender: c.gender,
+        origin: { name: c.origin?.name || 'Desconocido' },
+        image: c.image
+      }));
       
-      return data || [];
     } catch (error) {
       console.error('Resolver error:', error);
       throw new Error('Error fetching characters');
